@@ -6,9 +6,19 @@ authors = ["Nicolas Polomack <nicolas@polomack.eu>"]
 description = "A library for creating pretty tables in the terminal"
 repository = "https://github.com/Hirevo/tableau"
 documentation = "https://docs.rs/tableau"
-# keywords = []
-# categories = []
+keywords = ["table", "terminal", "cli"]
+categories = ["command-line-interface"]
 license = "MIT OR Apache-2.0"
+include = [
+    "build.rs",
+    "src/**/*",
+    "Cargo.toml",
+    "Cargo.lock",
+    "LICENSE*",
+    "./README.md",
+    "benches/**/*",
+    "examples/**/*",
+]
 
 [dependencies]
 regex = "1.11.1"

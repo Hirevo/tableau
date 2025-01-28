@@ -1,6 +1,27 @@
 <div align=center><h1>Tableau</h1></div>
 <div align=center><strong>A library for building pretty tables in the terminal</strong></div>
 
+<br />
+
+<div align="center">
+  <!-- crate version -->
+  <a href="https://crates.io/crates/tableau">
+    <img src="https://img.shields.io/crates/v/tableau" alt="crates.io version" />
+  </a>
+  <!-- crate downloads -->
+  <a href="https://crates.io/crates/tableau">
+    <img src="https://img.shields.io/crates/d/tableau" alt="crates.io download count" />
+  </a>
+  <!-- crate docs -->
+  <a href="https://docs.rs/tableau">
+    <img src="https://img.shields.io/docsrs/tableau" alt="docs.rs docs" />
+  </a>
+  <!-- crate license -->
+  <a href="https://github.com/Hirevo/tableau#license">
+    <img src="https://img.shields.io/crates/l/tableau" alt="crate license" />
+  </a>
+</div>
+
 About
 -----
 
