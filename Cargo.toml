@@ -1,0 +1,19 @@
+[package]
+name = "tableau"
+version = "0.1.0"
+edition = "2021"
+authors = ["Nicolas Polomack <nicolas@polomack.eu>"]
+description = "A library for creating pretty tables in the terminal"
+repository = "https://github.com/Hirevo/tableau"
+documentation = "https://docs.rs/tableau"
+# keywords = []
+# categories = []
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+regex = "1.11.1"
+textwrap = "0.16.1"
+unicode-width = "0.2.0"
+
+[dev-dependencies]
+owo-colors = "4.1.0"

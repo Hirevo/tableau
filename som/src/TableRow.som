@@ -1,0 +1,205 @@
+" A row within a `Table`. "
+TableRow = (
+    |
+    " The cells within the row. "
+    cells " : Vector[Cell] "
+
+    " Whether the row should have a top border. "
+    hasTopBorder " : Boolean "
+    |
+
+    cells = ( ^ cells )
+    cells: value = ( cells := value )
+
+    hasTopBorder = ( ^ hasTopBorder )
+    hasTopBorder: value = ( hasTopBorder := value )
+
+    " Repeats a string `n` times. "
+    repeat: s times: n = (
+        | result |
+        result := ''.
+        n timesRepeat: [ result := result + s ].
+        ^ result
+    )
+
+    " Renders the content of the row. "
+    renderContent: appender columnWidths: columnWidths style: style = (
+        | spannedColumns wrappedContents rowHeight |
+
+        rowHeight := 0.
+        spannedColumns := 0.
+        wrappedContents := Vector new.
+
+        cells do: [ :cell |
+            | width wrappedContent |
+            width := (
+                columnWidths copyFrom: spannedColumns + 1 to: spannedColumns + cell columnSpan
+            ) sum + (cell columnSpan - 1) - (cell hasPadding ifTrue: 2 ifFalse: 0).
+            wrappedContent := cell wrappedContent: width.
+            rowHeight := rowHeight max: wrappedContent size.
+            wrappedContents append: wrappedContent.
+            spannedColumns := spannedColumns + cell columnSpan.
+        ].
+
+        1 to: rowHeight do: [ :lineIndex |
+            lineIndex > 1 ifTrue: [ appender value: '\n' ].
+            spannedColumns := 0.
+            1 to: cells size do: [ :index |
+                | cell wrappedContent width line |
+                cell := cells at: index.
+                wrappedContent := wrappedContents at: index.
+                width := (
+                    columnWidths
+                        copyFrom: spannedColumns + 1
+                        to: spannedColumns + cell columnSpan
+                ) sum + (cell columnSpan - 1) - (cell hasPadding ifTrue: 2 ifFalse: 0).
+
+                appender value: style vertical.
+                cell hasPadding ifTrue: [ appender value: ' ' ].
+
+                line := (lineIndex <= wrappedContent size ifTrue: [ wrappedContent at: lineIndex ] ifFalse: nil).
+                line ifNil: [
+                    appender value: (self repeat: ' ' times: width).
+                ] ifNotNil: [
+                    | lineWidth |
+                    lineWidth := line length.
+                    cell alignment = #left ifTrue: [
+                        appender value: line.
+                        appender value: (self repeat: ' ' times: width - line length).
+                    ].
+                    cell alignment = #center ifTrue: [
+                        | padding |
+                        padding := width - line length / 2.
+                        appender value: (self repeat: ' ' times: padding).
+                        appender value: line.
+                        appender value: (self repeat: ' ' times: width - line length - padding).
+                    ].
+                    cell alignment = #right ifTrue: [
+                        appender value: (self repeat: ' ' times: width - line length).
+                        appender value: line.
+                    ].
+                ].
+
+                cell hasPadding ifTrue: [ appender value: ' ' ].
+                spannedColumns := spannedColumns + cell columnSpan.
+            ].
+            appender value: style vertical.
+        ].
+    )
+
+    " Renders the top border of the row. "
+    renderTopBorder: appender columnWidths: columnWidths style: style lastRow: lastRow = (
+        | intersections spannedColumns lastIntersection width |
+
+        appender value: (
+            lastRow ifNil:    [ style topLeftCorner ]
+                    ifNotNil: [ style outerLeftVertical ]
+        ).
+
+        intersections := self listIntersections: (
+            lastRow ifNil:    [ Array new ]
+                    ifNotNil: [ lastRow cells asArray collect: [ :cell | cell columnSpan ] ]
+        ) with: (
+            cells asArray collect: [ :cell | cell columnSpan ]
+        ).
+
+        spannedColumns := 0.
+        lastIntersection := nil.
+        intersections do: [ :pair |
+            | span intersection |
+
+            span := pair at: 1.
+            intersection := pair at: 2.
+
+            lastIntersection ifNotNil: [ appender value: lastIntersection ].
+            lastIntersection := (
+                intersection = #both   ifTrue: [ style intersection ] ifFalse: [
+                intersection = #top    ifTrue: [ style outerBottomHorizontal ] ifFalse: [
+                intersection = #bottom ifTrue: [ style outerTopHorizontal ] ] ]
+            ).
+
+            width := (
+                columnWidths copyFrom: spannedColumns + 1 to: spannedColumns + span
+            ) sum + span - 1.
+
+            appender value: (self repeat: style horizontal times: width).
+            spannedColumns := spannedColumns + span.
+        ].
+
+        appender value: (
+            lastRow ifNil:    [ style topRightCorner ]
+                    ifNotNil: [ style outerRightVertical ]
+        ).
+    )
+
+    " Lists all the intersections between two sets of column spans. "
+    listIntersections: topColumnSpans with: bottomColumnSpans = (
+        | topIter bottomIter topRemaining bottomRemaining output |
+
+        output := Vector new.
+
+        topIter := 1.
+        bottomIter := 1.
+
+        topRemaining := (topIter <= topColumnSpans length ifTrue: [ topColumnSpans at: topIter ] ifFalse: nil).
+        bottomRemaining := (bottomIter <= bottomColumnSpans length ifTrue: [ bottomColumnSpans at: bottomIter ] ifFalse: nil).
+
+        [ topRemaining notNil || bottomRemaining notNil ] whileTrue: [
+            | top bottom |
+
+            topRemaining ifNil: [
+                bottom := bottomRemaining.
+                bottomIter := bottomIter + 1.
+                bottomRemaining := (bottomIter <= bottomColumnSpans length ifTrue: [ bottomColumnSpans at: bottomIter ] ifFalse: nil).
+                output append: (Array with: bottom with: #bottom).
+            ] ifNotNil: [
+
+            bottomRemaining ifNil: [
+                top := topRemaining.
+                topIter := topIter + 1.
+                topRemaining := (topIter <= topColumnSpans length ifTrue: [ topColumnSpans at: topIter ] ifFalse: nil).
+                output append: (Array with: top with: #top).
+            ] ifNotNil: [
+
+            topRemaining ifNotNil: [ bottomRemaining ifNotNil: [
+                topRemaining = bottomRemaining ifTrue: [
+                    top := topRemaining.
+                    topIter    := topIter    + 1.
+                    bottomIter := bottomIter + 1.
+                    topRemaining    := (topIter <= topColumnSpans length ifTrue: [ topColumnSpans at: topIter ] ifFalse: nil).
+                    bottomRemaining := (bottomIter <= bottomColumnSpans length ifTrue: [ bottomColumnSpans at: bottomIter ] ifFalse: nil).
+                    output append: (Array with: top with: #both).
+                ] ifFalse: [
+
+                topRemaining < bottomRemaining ifTrue: [
+                    top := topRemaining.
+                    topIter := topIter + 1.
+                    topRemaining := (topIter <= topColumnSpans length ifTrue: [ topColumnSpans at: topIter ] ifFalse: nil).
+                    bottomRemaining := bottomRemaining - top.
+                    output append: (Array with: top with: #top).
+                ] ifFalse: [
+
+                topRemaining > bottomRemaining ifTrue: [
+                    bottom := bottomRemaining.
+                    bottomIter := bottomIter + 1.
+                    bottomRemaining := (bottomIter <= bottomColumnSpans length ifTrue: [ bottomColumnSpans at: bottomIter ] ifFalse: nil).
+                    topRemaining := topRemaining - bottom.
+                    output append: (Array with: bottom with: #bottom).
+                ] ] ].
+            ] ] ] ].
+        ].
+
+        ^ output.
+    )
+
+    --------------------
+
+    " Creates a new row. "
+    new = (
+        | row |
+        row := super new.
+        row cells: Vector new.
+        row hasTopBorder: true.
+        ^ row.
+    )
+)

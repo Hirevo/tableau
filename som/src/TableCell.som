@@ -1,0 +1,62 @@
+" A cell within a `TableRow`. "
+TableCell = (
+    |
+    " The content of the cell. "
+    content " : String "
+
+    " The number of columns the cell spans. "
+    columnSpan " : Integer "
+
+    " The alignment of the cell's content. "
+    alignment " : #left | #center | #right "
+
+    " Whether the cell's content should be horizontally padded. "
+    hasPadding " : Boolean "
+    |
+
+    content = ( ^ content )
+    content: value = ( content := value )
+
+    columnSpan = ( ^ columnSpan )
+    columnSpan: value = ( columnSpan := value )
+
+    alignment = ( ^ alignment )
+    alignment: value = ( alignment := value )
+
+    hasPadding = ( ^ hasPadding )
+    hasPadding: value = ( hasPadding := value )
+
+    " Returns the width of the cell based on the content. "
+    width = (
+        | maxLineWidth |
+        maxLineWidth := (content split: '\n') inject: 0 into: [ :acc :line | acc max: line length ].
+        ^ maxLineWidth + (hasPadding ifTrue: 2 ifFalse: 0).
+    )
+
+    " Returns the lines after character wrapping the content based on maxWidth. "
+    wrappedContent: maxWidth = (
+        | lines |
+        lines := Vector new.
+        (content split: '\n') do: [ :line |
+            1 to: line length by: maxWidth do: [ :start |
+                | end |
+                end := (start + maxWidth - 1) min: line length.
+                lines append: (line substringFrom: start to: end).
+            ].
+        ].
+        ^ lines.
+    )
+
+    -------------------
+
+    " Creates a new `TableCell` with the given content. "
+    new: content = (
+        | cell |
+        cell := super new.
+        cell content: content.
+        cell columnSpan: 1.
+        cell alignment: #left.
+        cell hasPadding: true.
+        ^ cell.
+    )
+)

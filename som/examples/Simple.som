@@ -1,0 +1,31 @@
+Simple = (
+    run = (
+        | table rows cells |
+        table := Table new.
+        table style: TableStyle ascii.
+        table maxColumnWidth: 40.
+
+        cells := Vector new.
+        cells append: (((TableCell new: 'This is some centered text') alignment: #center) columnSpan: 2).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (TableCell new: 'This is left aligned text').
+        cells append: ((TableCell new: 'This is right aligned text') alignment: #right).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (TableCell new: 'This is left aligned text').
+        cells append: ((TableCell new: 'This is right aligned text') alignment: #right).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (
+            (TableCell new: 'This is some really really really really really really really really really long text that is going to wrap to the next line')
+                columnSpan: 2
+        ).
+        table rows append: (TableRow new cells: cells).
+
+        table render println.
+    )
+)

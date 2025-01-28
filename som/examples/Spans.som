@@ -1,0 +1,64 @@
+Spans = (
+    run = (
+        | table rows cells |
+        table := Table new.
+        table style: TableStyle heavy.
+
+        cells := Vector new.
+        cells append: (((TableCell new: 'CELLS WITH MULTIPLE COLUMN SPANS') alignment: #center) columnSpan: 4).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: ((TableCell new: 'FIRST') alignment: #center).
+        cells append: ((TableCell new: 'SECOND') alignment: #center).
+        cells append: ((TableCell new: 'THIRD') alignment: #center).
+        cells append: ((TableCell new: 'FOURTH') alignment: #center).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: ((TableCell new: 'One') alignment: #center).
+        cells append: ((TableCell new: 'One') alignment: #center).
+        cells append: ((TableCell new: 'One') alignment: #center).
+        cells append: ((TableCell new: 'One') alignment: #center).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: ((TableCell new: 'One') alignment: #center).
+        cells append: ((TableCell new: 'One') alignment: #center).
+        cells append: (((TableCell new: 'Two') alignment: #center) columnSpan: 2).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: ((TableCell new: 'One') alignment: #center).
+        cells append: (((TableCell new: 'Two') alignment: #center) columnSpan: 2).
+        cells append: ((TableCell new: 'One') alignment: #center).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (((TableCell new: 'Two') alignment: #center) columnSpan: 2).
+        cells append: ((TableCell new: 'One') alignment: #center).
+        cells append: ((TableCell new: 'One') alignment: #center).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (((TableCell new: 'Two') alignment: #center) columnSpan: 2).
+        cells append: (((TableCell new: 'Two') alignment: #center) columnSpan: 2).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: ((TableCell new: 'One') alignment: #center).
+        cells append: (((TableCell new: 'Three') alignment: #center) columnSpan: 3).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (((TableCell new: 'Three') alignment: #center) columnSpan: 3).
+        cells append: ((TableCell new: 'One') alignment: #center).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (((TableCell new: 'Four') alignment: #center) columnSpan: 4).
+        table rows append: (TableRow new cells: cells).
+
+        table render println.
+    )
+)

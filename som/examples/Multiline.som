@@ -1,0 +1,30 @@
+Multiline = (
+    run = (
+        | table rows cells |
+        table := Table new.
+        table style: TableStyle fancy.
+
+        cells := Vector new.
+        cells append: ((TableCell new: 'CLIENT ID') alignment: #center).
+        cells append: ((TableCell new: 'CLIENT NAME') alignment: #center).
+        cells append: ((TableCell new: 'GRANT TYPES') alignment: #center).
+        cells append: ((TableCell new: 'SCOPES') alignment: #center).
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (TableCell new: '58d4b31cebc380011bf6961d7d05a40a').
+        cells append: (TableCell new: 'AwesomeService').
+        cells append: (TableCell new: 'authorization_code\nclient_credentials\nrefresh_token').
+        cells append: (TableCell new: 'openid\nprofile').
+        table rows append: (TableRow new cells: cells).
+
+        cells := Vector new.
+        cells append: (TableCell new: 'fb77c0f0ffccf92905c090cd6647d8eb').
+        cells append: (TableCell new: 'FabulousProject').
+        cells append: (TableCell new: 'authorization_code\nimplicit').
+        cells append: (TableCell new: 'openid\nnickname\nusername').
+        table rows append: (TableRow new cells: cells).
+
+        table render println.
+    )
+)

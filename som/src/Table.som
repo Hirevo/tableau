@@ -1,0 +1,171 @@
+" A class for rendering tables in the terminal "
+Table = (
+    |
+    " The rows in the table. "
+    rows            " : Vector[Row] "
+
+    " The style of the table "
+    style           " : TableStyle "
+
+    " The maximum width of all columns. "
+    ""
+    " It is overriden by the values in `maxColumnWidths`. "
+    maxColumnWidth  " : Integer | nil "
+
+    " The maximum widths of specific columns. "
+    ""
+    " It overrides `maxColumnWidth`. "
+    maxColumnWidths " : Hashtable[Integer, Integer] "
+
+    " Whether to vertically separate the rows. "
+    hasSeparateRows " : Boolean "
+
+    " Whether the table should have a top border. "
+    ""
+    " Setting `hasTopBorder` to `false` on the first row will have the same effect as setting this to `false`. "
+    hasTopBorder    " : Boolean "
+
+    " Whether the table should have a bottom border. "
+    hasBottomBorder " : Boolean "
+    |
+
+    rows = ( ^ rows )
+    rows: value = ( rows := value )
+
+    style = ( ^ style )
+    style: value = ( style := value )
+
+    maxColumnWidth = ( ^ maxColumnWidth )
+    maxColumnWidth: value = ( maxColumnWidth := value )
+
+    maxColumnWidths = ( ^ maxColumnWidths )
+    maxColumnWidths: value = ( maxColumnWidths := value )
+
+    hasSeparateRows = ( ^ hasSeparateRows )
+    hasSeparateRows: value = ( hasSeparateRows := value )
+
+    hasTopBorder = ( ^ hasTopBorder )
+    hasTopBorder: value = ( hasTopBorder := value )
+
+    hasBottomBorder = ( ^ hasBottomBorder )
+    hasBottomBorder: value = ( hasBottomBorder := value )
+
+    " Calculates the width of each column based on the content. "
+    calculateColumnWidths = (
+        | maxNumberOfColumns columnWidths |
+
+        maxNumberOfColumns := (
+            rows asArray inject: 0 into: [ :acc :row |
+                acc max: (
+                    row cells asArray inject: 0 into: [ :acc :cell | acc + cell columnSpan ]
+                )
+            ]
+        ).
+
+        columnWidths := Array new: maxNumberOfColumns withAll: 0.
+
+        rows do: [ :row |
+            | spannedColumns |
+            spannedColumns := 0.
+            row cells do: [ :cell |
+                | cellWholeWidth subcellWidth leftoverWidth |
+                cellWholeWidth := cell width.
+                subcellWidth := (cellWholeWidth - cell columnSpan + 1) / cell columnSpan.
+                leftoverWidth := (cellWholeWidth - cell columnSpan + 1) % cell columnSpan.
+                spannedColumns to: spannedColumns + cell columnSpan - 1 do: [ :index |
+                    | columnWidth |
+                    columnWidth := columnWidths at: index + 1.
+                    index = 1 ifTrue:  [ columnWidth := columnWidth max: (subcellWidth + leftoverWidth) ]
+                              ifFalse: [ columnWidth := columnWidth max: subcellWidth ].
+                    columnWidths at: index + 1 put: columnWidth.
+                ].
+                spannedColumns := spannedColumns + cell columnSpan.
+            ].
+        ].
+
+        columnWidths doIndexes: [ :index |
+            | columnWidth maxWidth |
+            columnWidth := columnWidths at: index.
+            maxWidth := (maxColumnWidths get: index) ifNil: maxColumnWidth.
+            maxWidth ifNotNil: [ columnWidths at: index put: (columnWidth min: maxWidth) ].
+        ].
+
+        ^ columnWidths.
+    )
+
+    " Repeats a string `n` times. "
+    repeat: s times: n = (
+        | result |
+        result := ''.
+        n timesRepeat: [ result := result + s ].
+        ^ result
+    )
+
+    " Renders the bottom border of the table. "
+    renderBottomBorder: appender columnWidths: columnWidths lastRow: lastRow = (
+        | first spannedColumns |
+
+        first := true.
+        spannedColumns := 0.
+
+        appender value: style bottomLeftCorner.
+        lastRow cells do: [ :cell |
+            first ifFalse: [ appender value: style outerBottomHorizontal ].
+            appender value: (
+                self repeat: style horizontal times: (
+                    columnWidths copyFrom: spannedColumns + 1 to: spannedColumns + cell columnSpan
+                ) sum + (cell columnSpan - 1)
+            ).
+            spannedColumns := spannedColumns + cell columnSpan.
+            first := false.
+        ].
+        appender value: style bottomRightCorner.
+    )
+
+    " Renders the table into a string. "
+    render = (
+        | rendered appender columnWidths rowIndex lastRow |
+
+        rendered := ''.
+        appender := [ :chunk | rendered := rendered + chunk ].
+
+        columnWidths := self calculateColumnWidths.
+
+        rowIndex := 0.
+        lastRow := nil.
+
+        rows do: [ :row |
+            lastRow ifNotNil: [ rendered := rendered + '\n' ].
+            row hasTopBorder && [ (rowIndex = 0 && hasTopBorder) || [ (rowIndex <> 0 && hasSeparateRows) ] ] ifTrue: [
+                row renderTopBorder: appender columnWidths: columnWidths style: style lastRow: lastRow.
+                rendered := rendered + '\n'.
+            ].
+            row renderContent: appender columnWidths: columnWidths style: style.
+            rowIndex := rowIndex + 1.
+            lastRow := row.
+        ].
+
+        hasBottomBorder ifTrue: [
+            rendered := rendered + '\n'.
+            self renderBottomBorder: appender columnWidths: columnWidths lastRow: rows last.
+        ].
+
+        ^ rendered.
+    )
+
+    --------------
+
+    " Creates a new `Table`. "
+    new = (
+        | table |
+        table := super new.
+        table rows: Vector new.
+        table style: TableStyle rounded.
+        table maxColumnWidth: nil.
+        table maxColumnWidths: Hashtable new.
+        table hasSeparateRows: true.
+        table hasTopBorder: true.
+        table hasBottomBorder: true.
+        ^ table.
+    )
+)
